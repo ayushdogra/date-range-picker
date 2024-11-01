@@ -1,31 +1,32 @@
-import React, { useState } from 'react';
-import DateRangePicker from './components/DateRangePicker';
+import React, { useState } from "react";
+import DateRangePicker from "./components/DateRangePicker";
 
 const App: React.FC = () => {
-  const [weekdays, setWeekdays] = useState<string[]>([]);
+  const [range, setRange] = useState<string[]>([]);
   const [weekends, setWeekends] = useState<string[]>([]);
 
-  const handleDateRangeChange = (weekdays: string[], weekends: string[]) => {
-    setWeekdays(weekdays);
-    setWeekends(weekends);
+  const handleDateRangeChange = ([dateRange, weekendDates]: [
+    string[],
+    string[]
+  ]) => {
+    setRange(dateRange);
+    setWeekends(weekendDates);
   };
 
   return (
-    <div>
-      {/* <h2>Date Range Picker</h2> */}
+    <div className="marginTop-32">
       <DateRangePicker onChange={handleDateRangeChange} />
-      
-      {weekdays.length > 0 && (
-        <div style={{ marginTop: '20px', textAlign:'center' }}>
-          <h3>Weekday Dates:</h3>
-          <p>{weekdays.join(', ')}</p> {/* Dates displayed as a comma-separated list */}
+      {range.length > 0 && (
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
+          <h3>Selected Range:</h3>
+          <p>{range.join(", ")}</p>
         </div>
       )}
 
       {weekends.length > 0 && (
-        <div style={{ marginTop: '20px', textAlign:'center' }}>
+        <div style={{ marginTop: "20px", textAlign: "center" }}>
           <h3>Weekend Dates:</h3>
-          <p>{weekends.join(', ')}</p> {/* Dates displayed as a comma-separated list */}
+          <p>{weekends.join(", ")}</p>
         </div>
       )}
     </div>

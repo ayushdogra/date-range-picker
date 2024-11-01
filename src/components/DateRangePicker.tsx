@@ -1,198 +1,169 @@
-// import React, { useState } from 'react';
-// import '../calender.css'; // Import the external CSS file
-
-// interface DateRangePickerProps {
-//   onChange: (weekdays: string[], weekends: string[]) => void;
-// }
-
-// // Helper functions
-// const getDaysInRange = (startDate: Date, endDate: Date): Date[] => {
-//   const dates = [];
-//   let currentDate = new Date(startDate);
-
-//   while (currentDate <= endDate) {
-//     dates.push(new Date(currentDate));
-//     currentDate.setDate(currentDate.getDate() + 1);
-//   }
-
-//   return dates;
-// };
-
-// const isWeekend = (date: Date): boolean => date.getDay() === 0 || date.getDay() === 6;
-
-// const formatDate = (date: Date): string => `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-
-// const DateRangePicker: React.FC<DateRangePickerProps> = ({ onChange }) => {
-//   const today = new Date();
-//   const [selectedStart, setSelectedStart] = useState<Date | null>(null);
-//   const [selectedEnd, setSelectedEnd] = useState<Date | null>(null);
-//   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-//   const [month, setMonth] = useState(today.getMonth());
-//   const [year, setYear] = useState(today.getFullYear());
-
-//   // Month names array
-//   const monthNames = [
-//     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-//     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-//   ];
-
-//   // Date selection handler
-//   const handleDateClick = (date: Date) => {
-//     if (!selectedStart || (selectedStart && selectedEnd)) {
-//       setSelectedStart(date);
-//       setSelectedEnd(null);
-//     } else {
-//       setSelectedEnd(date);
-//     }
-//   };
-
-//   // Apply selected date range
-//   const handleApply = () => {
-//     if (selectedStart && selectedEnd) {
-//       // Determine start and end dates irrespective of order
-//       const startDate = selectedStart < selectedEnd ? selectedStart : selectedEnd;
-//       const endDate = selectedStart < selectedEnd ? selectedEnd : selectedStart;
-
-//       const allDates = getDaysInRange(startDate, endDate);
-//       const weekdays = allDates.filter(date => !isWeekend(date)).map(formatDate);
-//       const weekends = allDates.filter(isWeekend).map(formatDate);
-//       onChange(weekdays, weekends);
-//       setIsCalendarOpen(false);
-//     }
-//   };
-
-//   // Render the calendar
-//   const renderCalendar = (offset: number) => {
-//     const currentMonth = (month + offset) % 12;
-//     const currentYear = year + Math.floor((month + offset) / 12);
-//     const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-//     const lastDateOfMonth = new Date(currentYear, currentMonth + 1, 0);
-//     const daysInMonth = lastDateOfMonth.getDate();
-//     const startDay = firstDayOfMonth.getDay();
-
-//     const days = Array.from({ length: 42 }, (_, i) => {
-//       if (i < startDay) {
-//         const prevMonthDate = new Date(currentYear, currentMonth, -(startDay - i) + 1);
-//         return { date: prevMonthDate, isCurrentMonth: false };
-//       } else if (i < startDay + daysInMonth) {
-//         const currentMonthDate = new Date(currentYear, currentMonth, i - startDay + 1);
-//         return { date: currentMonthDate, isCurrentMonth: true };
-//       } else {
-//         const nextMonthDate = new Date(currentYear, currentMonth + 1, i - (startDay + daysInMonth) + 1);
-//         return { date: nextMonthDate, isCurrentMonth: false };
-//       }
-//     });
-
-//     // Determine start and end dates irrespective of order for rendering
-//     const startDate = selectedStart && selectedEnd
-//       ? (selectedStart < selectedEnd ? selectedStart : selectedEnd)
-//       : null;
-//     const endDate = selectedStart && selectedEnd
-//       ? (selectedStart < selectedEnd ? selectedEnd : selectedStart)
-//       : null;
-
-//     return (
-//       <div className="calendar">
-//         <h4>{`${monthNames[currentMonth]}-${currentYear}`}</h4>
-//         <div className="days-grid">
-//           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-//             <div className="day-header" key={day}>{day}</div>
-//           ))}
-//           {days.map(({ date, isCurrentMonth }) => {
-//             const isSelectedStart = selectedStart && formatDate(selectedStart) === formatDate(date);
-//             const isSelectedEnd = selectedEnd && formatDate(selectedEnd) === formatDate(date);
-//             const inRange = startDate && endDate && date > startDate && date < endDate;
-
-//             // Determine highlight class based on date type (weekday/weekend)
-//             const highlightClass = !isWeekend(date) && (isSelectedStart || isSelectedEnd || inRange) ? 'highlight' : '';
-
-//             // Disable weekend buttons
-//             const isDisabled = !isCurrentMonth || isWeekend(date);
-
-//             return (
-//               <button
-//                 key={date.toString()}
-//                 onClick={() => !isDisabled && handleDateClick(date)} // Only handle click if not disabled
-//                 className={`date-button ${highlightClass} ${isSelectedStart ? 'selected' : ''} ${isSelectedEnd ? 'selected' : ''} ${inRange ? 'in-range' : ''}`}
-//                 disabled={isDisabled} // Disable the button
-//               >
-//                 {date.getDate()}
-//               </button>
-//             );
-//           })}
-//         </div>
-//       </div>
-//     );
-//   };
-
-//   return (
-//     <div className="date-range-picker">
-//       <h3>Date Range Picker</h3>
-//       <input
-//         type="text"
-//         readOnly
-//         value={
-//           selectedStart && selectedEnd
-//             ? `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}`
-//             : 'Select date range'
-//         }
-//         onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-//         className="date-input"
-//       />
-//       {isCalendarOpen && (
-//         <div className="calendar-container">
-//           <div className="month-year-selector">
-//             <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-//               {monthNames.map((name, index) => (
-//                 <option key={index} value={index}>{name}</option>
-//               ))}
-//             </select>
-//             <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-//               {Array.from({ length: 15 }, (_, i) => 2020 + i).map(yearValue => (
-//                 <option key={yearValue} value={yearValue}>{yearValue}</option>
-//               ))}
-//             </select>
-//           </div>
-//           <div className="calendars">
-//             {renderCalendar(0)} {/* Current month */}
-//             {renderCalendar(1)} {/* Next month */}
-//           </div>
-//           <button onClick={handleApply} className="apply-button">
-//             Apply
-//           </button>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default DateRangePicker;
-
-import React, { useState } from 'react';
-import '../calender.css'; // Import the external CSS file
+import React, { useState } from "react";
+import "../calendar.css"; // Import the external CSS file
 
 interface DateRangePickerProps {
-  onChange: (weekdays: string[], weekends: string[]) => void;
+  onChange: ([dateRange, weekendDates]: [string[], string[]]) => void;
+  predefinedRanges?: { label: string; daysOffset: number }[];
 }
 
-// Helper functions
-const getDaysInRange = (startDate: Date, endDate: Date): Date[] => {
-  const dates = [];
-  let currentDate = new Date(startDate);
+const monthNames = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
 
-  while (currentDate <= endDate) {
-    dates.push(new Date(currentDate));
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
+const weekDays = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
-  return dates;
+const Calendar: React.FC<{
+  month: number;
+  year: number;
+  onMonthChange: (month: number) => void;
+  onYearChange: (year: number) => void;
+  onDateClick: (date: Date) => void;
+  selectedStart: Date | null;
+  selectedEnd: Date | null;
+  isWeekend: (date: Date) => boolean;
+}> = ({
+  month,
+  year,
+  onMonthChange,
+  onYearChange,
+  onDateClick,
+  selectedStart,
+  selectedEnd,
+  isWeekend,
+}) => {
+  const today = new Date();
+  const days = getCalendarDays(month, year);
+
+  const handleMonthChange = (change: number) => {
+    const newMonth = month + change;
+    if (newMonth < 0) {
+      onYearChange(year - 1);
+      onMonthChange(11);
+    } else if (newMonth > 11) {
+      onYearChange(year + 1);
+      onMonthChange(0);
+    } else {
+      onMonthChange(newMonth);
+    }
+  };
+
+  return (
+    <div className="calendar">
+      <div className="month-year-select">
+        <button className="btn" onClick={() => handleMonthChange(-1)}>
+          {"<<"}
+        </button>
+        <span>
+          {monthNames[month]} {year}
+        </span>
+        <button className="btn" onClick={() => handleMonthChange(1)}>
+          {">>"}
+        </button>
+      </div>
+      <div className="days-grid">
+        {weekDays.map((day) => (
+          <div className="day-header" key={day}>
+            {day}
+          </div>
+        ))}
+        {days.map(({ date, isCurrentMonth }) => (
+          <CalendarDay
+            key={date.toString()}
+            date={date}
+            isCurrentMonth={isCurrentMonth}
+            isSelected={isSelected(selectedStart, selectedEnd, date) || false}
+            isInRange={isInRange(selectedStart, selectedEnd, date)}
+            isDisabled={!isCurrentMonth || isWeekend(date)}
+            onDateClick={() => onDateClick(date)}
+          />
+        ))}
+      </div>
+    </div>
+  );
 };
 
-const isWeekend = (date: Date): boolean => date.getDay() === 0 || date.getDay() === 6;
+const CalendarDay: React.FC<{
+  date: Date;
+  isCurrentMonth: boolean;
+  isSelected: boolean;
+  isInRange: boolean;
+  isDisabled: boolean;
+  onDateClick: () => void;
+}> = ({
+  date,
+  isCurrentMonth,
+  isSelected,
+  isInRange,
+  isDisabled,
+  onDateClick,
+}) => (
+  <button
+    onClick={!isDisabled ? onDateClick : undefined}
+    className={`date-button ${isCurrentMonth ? "" : "other-month"} ${
+      isSelected ? "selected" : ""
+    } ${isInRange ? "in-range" : ""}`}
+    disabled={isDisabled}
+  >
+    {date.getDate()}
+  </button>
+);
 
-const formatDate = (date: Date): string => `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+const isSelected = (
+  selectedStart: Date | null,
+  selectedEnd: Date | null,
+  date: Date
+) => {
+  return (
+    (selectedStart && date.toDateString() === selectedStart.toDateString()) ||
+    (selectedEnd && date.toDateString() === selectedEnd.toDateString())
+  );
+};
 
-const DateRangePicker: React.FC<DateRangePickerProps> = ({ onChange }) => {
+const isInRange = (
+  selectedStart: Date | null,
+  selectedEnd: Date | null,
+  date: Date
+) => {
+  if (!selectedStart || !selectedEnd) return false;
+  return (
+    date > (selectedStart < selectedEnd ? selectedStart : selectedEnd) &&
+    date < (selectedStart < selectedEnd ? selectedEnd : selectedStart)
+  );
+};
+
+const getCalendarDays = (month: number, year: number) => {
+  const firstDayOfMonth = new Date(year, month, 1);
+  const lastDateOfMonth = new Date(year, month + 1, 0);
+  const daysInMonth = lastDateOfMonth.getDate();
+  const startDay = firstDayOfMonth.getDay();
+
+  return Array.from({ length: 42 }, (_, i) => {
+    const currentMonthDate = new Date(year, month, i - startDay + 1);
+    return {
+      date: currentMonthDate,
+      isCurrentMonth: i >= startDay && i < startDay + daysInMonth,
+    };
+  });
+};
+
+const DateRangePicker: React.FC<DateRangePickerProps> = ({
+  onChange,
+  predefinedRanges = [
+    { label: "Last 7 Days", daysOffset: -7 },
+    { label: "Next 7 Days", daysOffset: 7 },
+  ],
+}) => {
   const today = new Date();
   const [selectedStart, setSelectedStart] = useState<Date | null>(null);
   const [selectedEnd, setSelectedEnd] = useState<Date | null>(null);
@@ -200,13 +171,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onChange }) => {
   const [month, setMonth] = useState(today.getMonth());
   const [year, setYear] = useState(today.getFullYear());
 
-  // Month names array
-  const monthNames = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-  ];
-
-  // Date selection handler
   const handleDateClick = (date: Date) => {
     if (!selectedStart || (selectedStart && selectedEnd)) {
       setSelectedStart(date);
@@ -216,137 +180,126 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({ onChange }) => {
     }
   };
 
-  // Apply selected date range
   const handleApply = () => {
     if (selectedStart && selectedEnd) {
-      // Determine start and end dates irrespective of order
-      const startDate = selectedStart < selectedEnd ? selectedStart : selectedEnd;
-      const endDate = selectedStart < selectedEnd ? selectedEnd : selectedStart;
+      const allDates = getDaysInRange(selectedStart, selectedEnd);
 
-      const allDates = getDaysInRange(startDate, endDate);
-      const weekdays = allDates.filter(date => !isWeekend(date)).map(formatDate);
-      const weekends = allDates.filter(isWeekend).map(formatDate);
-      onChange(weekdays, weekends);
+      const dateRange = [formatDate(selectedStart), formatDate(selectedEnd)];
+      const weekendDates = allDates.filter(isWeekend).map(formatDate);
+
+      onChange([dateRange, weekendDates]);
+
       setIsCalendarOpen(false);
     }
   };
 
-  // Set dates for predefined ranges
-  const handlePredefinedRange = (days: number) => {
+  const handlePredefinedRange = (daysOffset: number) => {
     const startDate = new Date(today);
-    const endDate = new Date(today);
-    startDate.setDate(today.getDate() - days);
+    startDate.setDate(today.getDate() + daysOffset);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + Math.abs(daysOffset));
+
     setSelectedStart(startDate);
     setSelectedEnd(endDate);
+
+    const allDates = getDaysInRange(startDate, endDate);
+
+    const dateRange = [formatDate(startDate), formatDate(endDate)];
+    const weekendDates = allDates.filter(isWeekend).map(formatDate);
+
+    onChange([dateRange, weekendDates]);
+
+    setIsCalendarOpen(false);
   };
 
-  // Render the calendar
-  const renderCalendar = (offset: number) => {
-    const currentMonth = (month + offset) % 12;
-    const currentYear = year + Math.floor((month + offset) / 12);
-    const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-    const lastDateOfMonth = new Date(currentYear, currentMonth + 1, 0);
-    const daysInMonth = lastDateOfMonth.getDate();
-    const startDay = firstDayOfMonth.getDay();
-
-    const days = Array.from({ length: 42 }, (_, i) => {
-      if (i < startDay) {
-        const prevMonthDate = new Date(currentYear, currentMonth, -(startDay - i) + 1);
-        return { date: prevMonthDate, isCurrentMonth: false };
-      } else if (i < startDay + daysInMonth) {
-        const currentMonthDate = new Date(currentYear, currentMonth, i - startDay + 1);
-        return { date: currentMonthDate, isCurrentMonth: true };
-      } else {
-        const nextMonthDate = new Date(currentYear, currentMonth + 1, i - (startDay + daysInMonth) + 1);
-        return { date: nextMonthDate, isCurrentMonth: false };
-      }
-    });
-
-    // Determine start and end dates irrespective of order for rendering
-    const startDate = selectedStart && selectedEnd
-      ? (selectedStart < selectedEnd ? selectedStart : selectedEnd)
-      : null;
-    const endDate = selectedStart && selectedEnd
-      ? (selectedStart < selectedEnd ? selectedEnd : selectedStart)
-      : null;
-
-    return (
-      <div className="calendar">
-        <h4>{`${monthNames[currentMonth]}-${currentYear}`}</h4>
-        <div className="days-grid">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div className="day-header" key={day}>{day}</div>
-          ))}
-          {days.map(({ date, isCurrentMonth }) => {
-            const isSelectedStart = selectedStart && formatDate(selectedStart) === formatDate(date);
-            const isSelectedEnd = selectedEnd && formatDate(selectedEnd) === formatDate(date);
-            const inRange = startDate && endDate && date > startDate && date < endDate;
-
-            // Determine highlight class based on date type (weekday/weekend)
-            const highlightClass = !isWeekend(date) && (isSelectedStart || isSelectedEnd || inRange) ? 'highlight' : '';
-
-            // Disable weekend buttons
-            const isDisabled = !isCurrentMonth || isWeekend(date);
-
-            return (
-              <button
-                key={date.toString()}
-                onClick={() => !isDisabled && handleDateClick(date)} // Only handle click if not disabled
-                className={`date-button ${highlightClass} ${isSelectedStart ? 'selected' : ''} ${isSelectedEnd ? 'selected' : ''} ${inRange ? 'in-range' : ''}`}
-                disabled={isDisabled} // Disable the button
-              >
-                {date.getDate()}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    );
+  const handleClear = () => {
+    setSelectedStart(null);
+    setSelectedEnd(null);
   };
 
   return (
     <div className="date-range-picker">
-      <h3>Date Range Picker</h3>
-      <input
-        type="text"
-        readOnly
-        value={
-          selectedStart && selectedEnd
-            ? `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}`
-            : 'Select date range'
-        }
-        onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-        className="date-input"
-      />
-      <div className="predefined-ranges">
-        <button onClick={() => handlePredefinedRange(7)} className="predefined-button">Last 7 Days</button>
-        <button onClick={() => handlePredefinedRange(30)} className="predefined-button">Last 30 Days</button>
+      <div className="input-container">
+        <input
+          type="text"
+          readOnly
+          value={
+            selectedStart && selectedEnd
+              ? `${formatDate(selectedStart)} ~ ${formatDate(selectedEnd)}`
+              : "Select date range"
+          }
+          onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+          className="date-input"
+        />
+
+        <button
+          style={{
+            opacity: selectedStart && selectedEnd ? 1 : 0,
+          }}
+          className="clear-button"
+          onClick={handleClear}
+        >
+          &times;
+        </button>
       </div>
       {isCalendarOpen && (
         <div className="calendar-container">
-          <div className="month-year-selector">
-            <select value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-              {monthNames.map((name, index) => (
-                <option key={index} value={index}>{name}</option>
+          <Calendar
+            month={month}
+            year={year}
+            onMonthChange={setMonth}
+            onYearChange={setYear}
+            onDateClick={handleDateClick}
+            selectedStart={selectedStart}
+            selectedEnd={selectedEnd}
+            isWeekend={isWeekend}
+          />
+          <div className="calendar-footer">
+            <div className="predefined-ranges">
+              {predefinedRanges.map((range, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handlePredefinedRange(range.daysOffset)}
+                  className="btn secondary-btn"
+                >
+                  {range.label}
+                </button>
               ))}
-            </select>
-            <select value={year} onChange={(e) => setYear(Number(e.target.value))}>
-              {Array.from({ length: 15 }, (_, i) => 2020 + i).map(yearValue => (
-                <option key={yearValue} value={yearValue}>{yearValue}</option>
-              ))}
-            </select>
+            </div>
+            <button onClick={handleApply} className="apply-button">
+              Apply
+            </button>
           </div>
-          <div className="calendars">
-            {renderCalendar(0)} {/* Current month */}
-            {renderCalendar(1)} {/* Next month */}
-          </div>
-          <button onClick={handleApply} className="apply-button">
-            Apply
-          </button>
         </div>
       )}
     </div>
   );
+};
+
+const getDaysInRange = (startDate: Date, endDate: Date): Date[] => {
+  const dates: Date[] = [];
+
+  const rangeStart = new Date(Math.min(startDate.getTime(), endDate.getTime()));
+  const rangeEnd = new Date(Math.max(startDate.getTime(), endDate.getTime()));
+
+  let currentDate = new Date(rangeStart);
+  while (currentDate <= rangeEnd) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return dates;
+};
+
+const formatDate = (date: Date) => {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+const isWeekend = (date: Date) => {
+  const day = date.getDay();
+  return day === 0 || day === 6; // Sunday is 0, Saturday is 6
 };
 
 export default DateRangePicker;
